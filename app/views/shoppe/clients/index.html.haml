@@ -1,0 +1,24 @@
+= form_tag({:controller => "clients", :action => "index"}, :method => "get") do 
+ %dl.left
+  %dt Nit
+  %dd= text_field_tag "nit", params[:nit]
+ %dl.right
+  %dd= submit_tag "Buscar", :class => 'button green button'
+
+.table
+ %table.data
+  %thead
+   %tr
+    %th Nit
+    %th Nombre
+    %th Contacto
+    %th Correo Electronico
+    %th Telefono
+  %tbody
+  - for client in @clients
+   %tr
+    %td= client.nit
+    %td= client.company
+    %td= client.email_address
+    %td= client.phone_number
+    %td= client.first_name

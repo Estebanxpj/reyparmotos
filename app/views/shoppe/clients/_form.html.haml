@@ -1,0 +1,6 @@
+= form_tag(search_clients_path, :method => "get") do 
+ %dl.left
+  %dt Nit
+  %dd= text_field_tag "nit"
+ %dl.right
+  %dd= submit_tag "Buscar", :class => 'button green button'

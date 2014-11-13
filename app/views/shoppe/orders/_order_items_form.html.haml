@@ -1,0 +1,63 @@
+%table.data.orderItems
+  %thead
+    %tr
+      %th.sku Codigo
+      %th.ptoduct Nombre
+      %th.qty Cantidad
+      %th.stock Iva
+      %th.price precio Unitario
+      %th.tax Descuento
+      %th.total Sub-Total
+      %th.weight Total
+  %tbody
+    - products = Shoppe::Product.ordered
+    = f.fields_for :order_items do |of|
+      = of.hidden_field :ordered_item_type
+      %tr.item{:class => of.object.ordered_item ? 'existing' : 'new'}
+        %td.sku{:colspan => of.object.ordered_item ? nil : 7}= of.collection_select :ordered_item_id, products, :id, :sku, {:include_blank => true}, {:data => {:placeholder => 'Agregar producto'}}
+        - if of.object.ordered_item
+          %td.product{:class => @order.new_record?}= of.object.ordered_item.full_name
+          %td.qty= of.text_field :quantity, :class => 'text'
+          %td.stock 16%
+          %td.money-input
+            .moneyInput
+              = of.text_field :unit_price, :placeholder => number_to_currency(of.object.unit_price, :unit => ''), :disabled => true, :class =>'text short'
+          %td.money-input
+            .moneyInput
+              = of.text_field :tax_amount, :placeholder => number_to_currency(of.object.tax_amount, :unit => ''), :disabled => true, :class =>'text short'
+          %td
+            .moneyInput
+              = text_field_tag '_', number_to_currency(of.object.total, :unit => ''), :disabled => true, :class => 'text short'
+          %td= of.text_field :weight, :placeholder => of.object.weight, :disabled => true, :class =>'text short'
+    - if @order.available_delivery_services.empty?
+      %tr.delivery
+        - if @order.delivery_required?
+          %td.none{:colspan => 7} No suitable delivery service available, order cannot be created without an associated delivery service.
+        - else
+          %td.none-needed{:colspan => 7} 
+    - else
+      %tr.delivery
+        %td.product= f.collection_select :delivery_service_id, @order.available_delivery_services, :id, :name
+        %td
+        %td
+        %td.money-input
+          .moneyInput
+            = f.text_field :delivery_price, :placeholder => number_to_currency(@order.delivery_price, :unit => ''), :class =>'text short'
+        %td.money-input
+          .moneyInput
+            = f.text_field :delivery_tax_amount, :placeholder => number_to_currency(@order.delivery_tax_amount, :unit => ''), :class => 'text short'
+        %td.money.total= text_field_tag '_', number_to_currency(@order.delivery_price + @order.delivery_tax_amount, :unit => ''), :class => 'text short', :disabled => true
+        %td
+  %tfoot
+    %tr
+      %td
+      %td
+      %td
+      %td= text_field_tag '_', number_to_currency(@order.total_before_tax, :unit => ''), :class => 'text short', :disabled => true
+      %td= text_field_tag '_', number_to_currency(@order.tax, :unit => ''), :class => 'text short', :disabled => true
+      %td= text_field_tag '_', number_to_currency(@order.total, :unit => ''), :class => 'text short', :disabled => true
+      %td.weight= text_field_tag '_', number_to_currency(@order.total_weight, :unit => ''), :class => 'text short', :disabled => true
+
+- unless @order.new_record?
+  %p.slaWarning
+    Any changes to quantities will update the appropriate stock levels for the associated product.
